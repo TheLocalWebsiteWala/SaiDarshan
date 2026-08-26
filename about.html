@@ -23,7 +23,10 @@
     <meta name="twitter:title" content="About Sai Darshan Salon — Master Stylists Since 1998" />
     <meta name="twitter:description" content="The story, the craft and the master stylists behind Sai Darshan Salon in Dindoli, Surat." />
     <meta name="twitter:image" content="https://saidarshansalon.in/assets/img/shop-wide.png" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/img/favicon-mark.png" />
+    <link rel="apple-touch-icon" href="assets/img/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,26 +39,50 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "AboutPage",
-      "mainEntity": {
-        "@type": "HairSalon",
-        "name": "Sai Darshan Salon",
-        "foundingDate": "1998",
-        "telephone": "+919662281908",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Shop No 15, Dream Shoppers, opp. Dindoli Police Station, Tirupati Society",
-          "addressLocality": "Dindoli, Surat",
-          "addressRegion": "Gujarat",
-          "postalCode": "394210",
-          "addressCountry": "IN"
+      "@graph": [
+        {
+          "@type": "AboutPage",
+          "@id": "https://saidarshansalon.in/about.html#webpage",
+          "url": "https://saidarshansalon.in/about.html",
+          "name": "About Sai Darshan Salon — Master Stylists & Grooming Craft | Surat",
+          "mainEntity": {
+            "@type": "HairSalon",
+            "name": "Sai Darshan Salon",
+            "foundingDate": "1998",
+            "telephone": "+919662281908",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Shop No 15, Dream Shoppers, opp. Dindoli Police Station, Tirupati Society",
+              "addressLocality": "Dindoli, Surat",
+              "addressRegion": "Gujarat",
+              "postalCode": "394210",
+              "addressCountry": "IN"
+            },
+            "founder": {
+              "@type": "Person",
+              "name": "Harshal Bhai",
+              "jobTitle": "Master Barber & Hair Specialist"
+            }
+          }
         },
-        "founder": {
-          "@type": "Person",
-          "name": "Harshal Bhai",
-          "jobTitle": "Master Barber & Hair Specialist"
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://saidarshansalon.in/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "About Us",
+              "item": "https://saidarshansalon.in/about.html"
+            }
+          ]
         }
-      }
+      ]
     }
     </script>
   </head>

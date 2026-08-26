@@ -23,7 +23,10 @@
     <meta name="twitter:title" content="Salon Pricing &amp; Package Rates — Sai Darshan Salon Surat" />
     <meta name="twitter:description" content="Transparent pricing for haircuts, hair protein therapy, balayage &amp; packages in INR (₹)." />
     <meta name="twitter:image" content="https://saidarshansalon.in/assets/img/tools.webp" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/img/favicon-mark.png" />
+    <link rel="apple-touch-icon" href="assets/img/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,50 +39,72 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "OfferCatalog",
-      "name": "Sai Darshan Salon Service Pricing Menu",
-      "itemListElement": [
+      "@graph": [
         {
-          "@type": "Offer",
-          "name": "Men's Classic Haircut",
-          "price": "699",
-          "priceCurrency": "INR"
+          "@type": "OfferCatalog",
+          "@id": "https://saidarshansalon.in/pricing.html#offers",
+          "name": "Sai Darshan Salon Service Pricing Menu",
+          "itemListElement": [
+            {
+              "@type": "Offer",
+              "name": "Men's Classic Haircut",
+              "price": "699",
+              "priceCurrency": "INR"
+            },
+            {
+              "@type": "Offer",
+              "name": "Executive Skin Fade",
+              "price": "799",
+              "priceCurrency": "INR"
+            },
+            {
+              "@type": "Offer",
+              "name": "Hot Towel Razor Shave",
+              "price": "599",
+              "priceCurrency": "INR"
+            },
+            {
+              "@type": "Offer",
+              "name": "Hair Protein Therapy",
+              "price": "5999",
+              "priceCurrency": "INR"
+            },
+            {
+              "@type": "Offer",
+              "name": "Dimensional Balayage",
+              "price": "6499",
+              "priceCurrency": "INR"
+            },
+            {
+              "@type": "Offer",
+              "name": "The Executive Reset Package",
+              "price": "1899",
+              "priceCurrency": "INR"
+            },
+            {
+              "@type": "Offer",
+              "name": "Protein & Glow Ritual Package",
+              "price": "6499",
+              "priceCurrency": "INR"
+            }
+          ]
         },
         {
-          "@type": "Offer",
-          "name": "Executive Skin Fade",
-          "price": "799",
-          "priceCurrency": "INR"
-        },
-        {
-          "@type": "Offer",
-          "name": "Hot Towel Razor Shave",
-          "price": "599",
-          "priceCurrency": "INR"
-        },
-        {
-          "@type": "Offer",
-          "name": "Hair Protein Therapy",
-          "price": "5999",
-          "priceCurrency": "INR"
-        },
-        {
-          "@type": "Offer",
-          "name": "Dimensional Balayage",
-          "price": "6499",
-          "priceCurrency": "INR"
-        },
-        {
-          "@type": "Offer",
-          "name": "The Executive Reset Package",
-          "price": "1899",
-          "priceCurrency": "INR"
-        },
-        {
-          "@type": "Offer",
-          "name": "Protein & Glow Ritual Package",
-          "price": "6499",
-          "priceCurrency": "INR"
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://saidarshansalon.in/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Pricing",
+              "item": "https://saidarshansalon.in/pricing.html"
+            }
+          ]
         }
       ]
     }

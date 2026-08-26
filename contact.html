@@ -23,7 +23,10 @@
     <meta name="twitter:title" content="Contact &amp; Book Appointment — Sai Darshan Salon Surat" />
     <meta name="twitter:description" content="Reach out to Sai Darshan Salon in Dindoli, Surat. Call or WhatsApp +91 96622 81908." />
     <meta name="twitter:image" content="https://saidarshansalon.in/assets/img/storefront.webp" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/img/favicon-mark.png" />
+    <link rel="apple-touch-icon" href="assets/img/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,34 +39,58 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ContactPage",
-      "mainEntity": {
-        "@type": "HairSalon",
-        "name": "Sai Darshan Salon",
-        "telephone": "+919662281908",
-        "email": "contact@saidarshansalon.in",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Shop No 15, Dream Shoppers, opp. Dindoli Police Station, Tirupati Society",
-          "addressLocality": "Dindoli, Surat",
-          "addressRegion": "Gujarat",
-          "postalCode": "394210",
-          "addressCountry": "IN"
-        },
-        "geo": {
-          "@type": "GeoCoordinates",
-          "latitude": 21.14379,
-          "longitude": 72.88091
-        },
-        "openingHoursSpecification": [
-          {
-            "@type": "OpeningHoursSpecification",
-            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-            "opens": "08:00",
-            "closes": "00:00"
+      "@graph": [
+        {
+          "@type": "ContactPage",
+          "@id": "https://saidarshansalon.in/contact.html#webpage",
+          "url": "https://saidarshansalon.in/contact.html",
+          "name": "Contact & Book Appointment — Sai Darshan Salon Surat",
+          "mainEntity": {
+            "@type": "HairSalon",
+            "name": "Sai Darshan Salon",
+            "telephone": "+919662281908",
+            "email": "contact@saidarshansalon.in",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Shop No 15, Dream Shoppers, opp. Dindoli Police Station, Tirupati Society",
+              "addressLocality": "Dindoli, Surat",
+              "addressRegion": "Gujarat",
+              "postalCode": "394210",
+              "addressCountry": "IN"
+            },
+            "geo": {
+              "@type": "GeoCoordinates",
+              "latitude": 21.14379,
+              "longitude": 72.88091
+            },
+            "openingHoursSpecification": [
+              {
+                "@type": "OpeningHoursSpecification",
+                "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+                "opens": "08:00",
+                "closes": "00:00"
+              }
+            ]
           }
-        ]
-      }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://saidarshansalon.in/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Contact Us",
+              "item": "https://saidarshansalon.in/contact.html"
+            }
+          ]
+        }
+      ]
     }
     </script>
   </head>
@@ -117,17 +144,17 @@
           <form class="contact-framer-form" id="contactForm">
             <div class="contact-framer-field">
               <label for="name">NAME</label>
-              <input id="name" name="name" type="text" placeholder="e.g. Deep Patel" required />
+              <input id="name" name="name" type="text" placeholder="e.g. Deep Patel" autocomplete="name" required />
             </div>
 
             <div class="contact-framer-field">
               <label for="phone">PHONE</label>
-              <input id="phone" name="phone" type="tel" placeholder="+91 96622 81908" required />
+              <input id="phone" name="phone" type="tel" placeholder="+91 96622 81908" autocomplete="tel" required />
             </div>
 
             <div class="contact-framer-field">
               <label for="email">EMAIL</label>
-              <input id="email" name="email" type="email" placeholder="yourname@domain.com" required />
+              <input id="email" name="email" type="email" placeholder="yourname@domain.com" autocomplete="email" required />
             </div>
 
             <div class="contact-framer-field">

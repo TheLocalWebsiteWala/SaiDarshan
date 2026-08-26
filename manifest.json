@@ -1,0 +1,21 @@
+{
+  "name": "Sai Darshan Salon Surat",
+  "short_name": "Sai Darshan",
+  "description": "Premium Unisex Salon & Hair Studio in Dindoli, Surat, Gujarat.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#f2652e",
+  "icons": [
+    {
+      "src": "assets/img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

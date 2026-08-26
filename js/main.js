@@ -280,19 +280,41 @@
     });
   }
 
-  /* ---- contact form --------------------------------------------------- */
+  /* ---- contact form & WhatsApp integration --------------------------- */
   var contactForm = document.getElementById("contactForm") || document.querySelector("form[data-contact]");
   if (contactForm) {
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
       var feedback = document.getElementById("formFeedback") || contactForm.querySelector(".form-note");
-      var name = document.getElementById("name") ? document.getElementById("name").value : "Valued Guest";
-      var service = document.getElementById("service") ? document.getElementById("service").value : "Service";
-      
+      var name = document.getElementById("name") ? document.getElementById("name").value.trim() : "Guest";
+      var phone = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
+      var email = document.getElementById("email") ? document.getElementById("email").value.trim() : "";
+      var service = document.getElementById("service") ? document.getElementById("service").value : "General Inquiry";
+      var notes = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
+
+      // Format WhatsApp message
+      var waMsg = "Hello Sai Darshan Salon! I would like to book an appointment:\n\n" +
+        "👤 *Name:* " + name + "\n" +
+        "📞 *Phone:* " + phone + "\n" +
+        (email ? "📧 *Email:* " + email + "\n" : "") +
+        "✂️ *Service:* " + service + "\n" +
+        (notes ? "📝 *Notes:* " + notes + "\n" : "") +
+        "📍 *Location:* Dindoli, Surat";
+
+      var waUrl = "https://api.whatsapp.com/send?phone=919662281908&text=" + encodeURIComponent(waMsg);
+
       if (feedback) {
         feedback.style.display = "block";
-        feedback.innerHTML = "✓ Thank you, <strong>" + name + "</strong>! Your reservation request for <em>" + service + "</em> in Surat has been received. Our concierge will contact you via WhatsApp shortly.";
+        feedback.innerHTML = "✓ Thank you, <strong>" + name + "</strong>! Opening WhatsApp to connect with our concierge... <br /><small style='color:#cfd3dc; margin-top:4px; display:inline-block;'>If WhatsApp did not open automatically, <a href='" + waUrl + "' target='_blank' rel='noopener noreferrer' style='color:var(--orange); text-decoration:underline;'>click here to message +91 96622 81908</a>.</small>";
       }
+
+      // Open WhatsApp in new tab
+      try {
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+      } catch (err) {
+        // Popups might be blocked
+      }
+
       contactForm.reset();
     });
   }

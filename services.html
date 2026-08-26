@@ -23,7 +23,10 @@
     <meta name="twitter:title" content="Salon Services &amp; Hair Treatments — Sai Darshan Salon Surat" />
     <meta name="twitter:description" content="Explore salon services in Dindoli, Surat: skin fades, hair protein therapy, balayage, and hot towel shaves." />
     <meta name="twitter:image" content="https://saidarshansalon.in/assets/img/haircut-fade.webp" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="assets/img/favicon-mark.png" />
+    <link rel="apple-touch-icon" href="assets/img/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -36,71 +39,93 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Service",
-      "serviceType": "Hair and Beauty Salon Services",
-      "provider": {
-        "@type": "HairSalon",
-        "name": "Sai Darshan Salon",
-        "telephone": "+919662281908",
-        "address": {
-          "@type": "PostalAddress",
-          "streetAddress": "Shop No 15, Dream Shoppers, opp. Dindoli Police Station",
-          "addressLocality": "Dindoli, Surat",
-          "addressRegion": "Gujarat",
-          "postalCode": "394210",
-          "addressCountry": "IN"
-        }
-      },
-      "areaServed": {
-        "@type": "City",
-        "name": "Surat"
-      },
-      "hasOfferCatalog": {
-        "@type": "OfferCatalog",
-        "name": "Unisex Salon Services",
-        "itemListElement": [
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Service",
-              "name": "Haircut & Skin Fade",
-              "description": "Scissor and clipper work, neck shave with warm lather, wash, and matte styling product."
-            },
-            "price": "799",
-            "priceCurrency": "INR"
+      "@graph": [
+        {
+          "@type": "Service",
+          "@id": "https://saidarshansalon.in/services.html#service",
+          "serviceType": "Hair and Beauty Salon Services",
+          "provider": {
+            "@type": "HairSalon",
+            "name": "Sai Darshan Salon",
+            "telephone": "+919662281908",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Shop No 15, Dream Shoppers, opp. Dindoli Police Station",
+              "addressLocality": "Dindoli, Surat",
+              "addressRegion": "Gujarat",
+              "postalCode": "394210",
+              "addressCountry": "IN"
+            }
           },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Service",
-              "name": "Hair Protein Therapy & Keratin",
-              "description": "Restorative hair protein treatment eliminating frizz and delivering silky shine."
-            },
-            "price": "5999",
-            "priceCurrency": "INR"
+          "areaServed": {
+            "@type": "City",
+            "name": "Surat"
           },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Service",
-              "name": "Dimensional Balayage & Colour",
-              "description": "Hand-painted sun-kissed ribbons, root melt, bond-building integration, and gloss toner."
-            },
-            "price": "6499",
-            "priceCurrency": "INR"
-          },
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Service",
-              "name": "Hot Towel Straight Razor Shave",
-              "description": "Steamed eucalyptus towels, pre-shave oil, single-blade pass, and aftercare balm."
-            },
-            "price": "599",
-            "priceCurrency": "INR"
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Unisex Salon Services",
+            "itemListElement": [
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Haircut & Skin Fade",
+                  "description": "Scissor and clipper work, neck shave with warm lather, wash, and matte styling product."
+                },
+                "price": "799",
+                "priceCurrency": "INR"
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Hair Protein Therapy & Keratin",
+                  "description": "Restorative hair protein treatment eliminating frizz and delivering silky shine."
+                },
+                "price": "5999",
+                "priceCurrency": "INR"
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Dimensional Balayage & Colour",
+                  "description": "Hand-painted sun-kissed ribbons, root melt, bond-building integration, and gloss toner."
+                },
+                "price": "6499",
+                "priceCurrency": "INR"
+              },
+              {
+                "@type": "Offer",
+                "itemOffered": {
+                  "@type": "Service",
+                  "name": "Hot Towel Straight Razor Shave",
+                  "description": "Steamed eucalyptus towels, pre-shave oil, single-blade pass, and aftercare balm."
+                },
+                "price": "599",
+                "priceCurrency": "INR"
+              }
+            ]
           }
-        ]
-      }
+        },
+        {
+          "@type": "BreadcrumbList",
+          "itemListElement": [
+            {
+              "@type": "ListItem",
+              "position": 1,
+              "name": "Home",
+              "item": "https://saidarshansalon.in/"
+            },
+            {
+              "@type": "ListItem",
+              "position": 2,
+              "name": "Services",
+              "item": "https://saidarshansalon.in/services.html"
+            }
+          ]
+        }
+      ]
     }
     </script>
   </head>
