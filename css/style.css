@@ -905,10 +905,7 @@ body.menu-open .mobile-menu {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1);
-  transition:
-    transform 0.7s var(--ease),
-    filter 0.6s var(--ease);
+  transition: transform 0.7s var(--ease);
 }
 
 .card::before {
@@ -917,11 +914,39 @@ body.menu-open .mobile-menu {
   inset: 0;
   z-index: 1;
   background: linear-gradient(180deg, transparent 45%, rgba(10, 10, 10, 0.75));
+  pointer-events: none;
+}
+
+.package-card {
+  position: relative;
+  background: var(--panel, #121316);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-radius: 4px;
+  transition: transform 0.35s var(--ease), border-color 0.35s var(--ease), box-shadow 0.35s var(--ease);
+  z-index: 2;
+}
+
+.package-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(242, 101, 46, 0.5);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+}
+
+.package-card .btn {
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  margin-top: auto;
+  align-self: flex-start;
+  pointer-events: auto;
 }
 
 .card:hover img {
   transform: scale(1.06);
-  filter: grayscale(0);
 }
 
 .card__label {
@@ -957,6 +982,57 @@ body.menu-open .mobile-menu {
   grid-template-columns: repeat(2, 1fr);
   column-gap: 74px;
   row-gap: 6px;
+}
+
+.prices-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 68px;
+  row-gap: 40px;
+}
+
+.prices-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.prices-col__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  border-bottom: 2px solid rgba(242, 101, 46, 0.4);
+}
+
+.prices-col__head h3 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+  color: var(--black, #0a0a0a);
+}
+
+.section:not(.section--cream) .prices-col__head h3 {
+  color: var(--cream, #faf5ea);
+}
+
+.prices-col__badge {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--orange, #f2652e);
+  background: rgba(242, 101, 46, 0.12);
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(242, 101, 46, 0.3);
+}
+
+.prices-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .price {
@@ -1046,7 +1122,7 @@ body.menu-open .mobile-menu {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1) brightness(0.5);
+  filter: brightness(0.5);
 }
 
 .marquee__track {
@@ -1743,15 +1819,11 @@ body.menu-open .mobile-menu {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  filter: grayscale(1);
-  transition:
-    transform 0.7s var(--ease),
-    filter 0.5s var(--ease);
+  transition: transform 0.7s var(--ease);
 }
 
 .gallery-grid figure:hover img {
   transform: scale(1.07);
-  filter: grayscale(0);
 }
 
 .gallery-grid figcaption {
@@ -1792,12 +1864,6 @@ body.menu-open .mobile-menu {
   width: 100%;
   height: 320px;
   object-fit: cover;
-  filter: grayscale(1);
-  transition: filter 0.5s var(--ease);
-}
-
-.team figure:hover img {
-  filter: grayscale(0);
 }
 
 .team h3 {
@@ -1960,6 +2026,7 @@ body.menu-open .mobile-menu {
 
   .cards,
   .prices,
+  .prices-dual,
   .about__cols,
   .posts,
   .gallery-grid,
@@ -2245,10 +2312,23 @@ body.menu-open .mobile-menu {
   gap: 20px;
 }
 
+.contact-framer-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .contact-framer-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .contact-framer-field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  position: relative;
 }
 
 .contact-framer-field label {
@@ -2263,15 +2343,64 @@ body.menu-open .mobile-menu {
 .contact-framer-field select,
 .contact-framer-field textarea {
   width: 100%;
-  background: #202226;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
-  padding: 14px 18px;
-  color: #fff;
+  min-height: 48px;
+  background: #1c1e22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 13px 18px;
+  color: #faf5ea;
   font-family: var(--font-body);
   font-size: 15px;
   outline: none;
-  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease);
+  accent-color: var(--orange, #f2652e);
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+/* Custom Dropdown Styling */
+.contact-framer-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f2652e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: calc(100% - 16px) center;
+  background-size: 16px 16px;
+}
+
+/* Styled Dropdown Options */
+.contact-framer-field select option {
+  background-color: #17181c;
+  color: #faf5ea;
+  padding: 14px 16px;
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+.contact-framer-field select option:checked {
+  background-color: #26282f;
+  color: var(--orange, #f2652e);
+  font-weight: 500;
+}
+
+/* Custom Date Picker Styling */
+.contact-framer-field input[type="date"] {
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.contact-framer-field input[type="date"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: invert(53%) sepia(85%) saturate(1450%) hue-rotate(345deg) brightness(98%) contrast(96%);
+  opacity: 0.9;
+  transition: transform 0.2s var(--ease), opacity 0.2s var(--ease);
+}
+
+.contact-framer-field input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.15);
 }
 
 .contact-framer-field input::placeholder,
@@ -2283,7 +2412,336 @@ body.menu-open .mobile-menu {
 .contact-framer-field select:focus,
 .contact-framer-field textarea:focus {
   border-color: var(--orange, #f2652e);
-  background: #25282e;
+  background: #22252b;
+  box-shadow: 0 0 0 3px rgba(242, 101, 46, 0.2);
+}
+
+.contact-framer-field input::selection,
+.contact-framer-field textarea::selection {
+  background: rgba(242, 101, 46, 0.4);
+  color: #fff;
+}
+
+/* ==========================================================================
+   CUSTOM LUXURY INTERACTIVE DROPDOWN & CALENDAR SYSTEM
+   ========================================================================== */
+
+.custom-select-wrap {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.custom-select-wrap select {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.custom-select-trigger {
+  width: 100%;
+  min-height: 48px;
+  background: #1c1e22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 13px 44px 13px 18px;
+  color: #faf5ea;
+  font-family: var(--font-body);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.custom-select-trigger::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f2652e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  transition: transform 0.25s var(--ease);
+  pointer-events: none;
+}
+
+.custom-select-wrap.is-open .custom-select-trigger {
+  border-color: var(--orange, #f2652e);
+  background: #22252b;
+  box-shadow: 0 0 0 3px rgba(242, 101, 46, 0.2);
+}
+
+.custom-select-wrap.is-open .custom-select-trigger::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+.custom-select-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: #16171b;
+  border: 1px solid rgba(242, 101, 46, 0.35);
+  border-radius: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+  padding: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange, #f2652e) #121316;
+}
+
+/* Custom Scrollbar for Dropdown Menu */
+.custom-select-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-select-menu::-webkit-scrollbar-track {
+  background: #121316;
+  border-radius: 999px;
+  margin: 6px 0;
+}
+
+.custom-select-menu::-webkit-scrollbar-thumb {
+  background: rgba(242, 101, 46, 0.6);
+  border-radius: 999px;
+  transition: background 0.2s var(--ease);
+}
+
+.custom-select-menu::-webkit-scrollbar-thumb:hover {
+  background: var(--orange, #f2652e);
+}
+
+.custom-select-menu::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.custom-select-wrap.is-open .custom-select-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.custom-select-option {
+  padding: 12px 16px;
+  font-size: 14.5px;
+  color: #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.custom-select-option:hover {
+  background: #23262d;
+  color: #fff;
+  padding-left: 20px;
+}
+
+.custom-select-option.is-selected {
+  background: rgba(242, 101, 46, 0.15);
+  color: var(--orange, #f2652e);
+  font-weight: 500;
+}
+
+.custom-select-option.is-selected::after {
+  content: "✓";
+  color: var(--orange, #f2652e);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* Custom Calendar Styling */
+.custom-calendar-wrap {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.custom-calendar-wrap input[type="date"] {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.custom-calendar-trigger {
+  width: 100%;
+  min-height: 48px;
+  background: #1c1e22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 13px 44px 13px 18px;
+  color: #faf5ea;
+  font-family: var(--font-body);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.custom-calendar-trigger::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23f2652e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2' ry='2'/%3E%3Cline x1='16' x2='16' y1='2' y2='6'/%3E%3Cline x1='8' x2='8' y1='2' y2='6'/%3E%3Cline x1='3' x2='21' y1='10' y2='10'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+}
+
+.custom-calendar-wrap.is-open .custom-calendar-trigger {
+  border-color: var(--orange, #f2652e);
+  background: #22252b;
+  box-shadow: 0 0 0 3px rgba(242, 101, 46, 0.2);
+}
+
+.custom-calendar-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  min-width: 290px;
+  max-width: 340px;
+  background: #16171b;
+  border: 1px solid rgba(242, 101, 46, 0.35);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+}
+
+.custom-calendar-wrap.is-open .custom-calendar-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cal-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.cal-nav-btn {
+  background: #23262d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #faf5ea;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.cal-nav-btn:hover {
+  background: var(--orange, #f2652e);
+  color: #000;
+  border-color: var(--orange, #f2652e);
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.cal-weekdays span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--orange, #f2652e);
+  text-transform: uppercase;
+}
+
+.cal-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13.5px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #e5e7eb;
+  transition: background 0.15s, color 0.15s;
+}
+
+.cal-day:hover:not(.is-disabled):not(.is-empty) {
+  background: #262930;
+  color: var(--orange, #f2652e);
+}
+
+.cal-day.is-selected {
+  background: var(--orange, #f2652e) !important;
+  color: #0a0a0a !important;
+  font-weight: 700;
+}
+
+.cal-day.is-today {
+  border: 1px solid var(--orange, #f2652e);
+}
+
+.cal-day.is-disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.cal-day.is-empty {
+  cursor: default;
 }
 
 .contact-framer-submit {
@@ -2461,7 +2919,9 @@ iframe {
 
   .contact-framer-field input,
   .contact-framer-field select,
-  .contact-framer-field textarea {
+  .contact-framer-field textarea,
+  .custom-select-trigger,
+  .custom-calendar-trigger {
     font-size: 16px; /* Prevents auto-zoom in iOS Safari */
     padding: 12px 14px;
   }
