@@ -2744,6 +2744,246 @@ body.menu-open .mobile-menu {
   cursor: default;
 }
 
+/* ==========================================================================
+   CUSTOM LUXURY CLOCK TIME PICKER SYSTEM
+   ========================================================================== */
+
+.custom-clock-wrap {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.custom-clock-wrap input#bookingTime {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+.custom-clock-trigger {
+  width: 100%;
+  min-height: 48px;
+  background: #1c1e22;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 13px 44px 13px 18px;
+  color: #faf5ea;
+  font-family: var(--font-body);
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  transition: border-color 0.25s var(--ease), background-color 0.25s var(--ease), box-shadow 0.25s var(--ease);
+}
+
+.custom-clock-trigger::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23f2652e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  pointer-events: none;
+}
+
+.custom-clock-wrap.is-open .custom-clock-trigger {
+  border-color: var(--orange, #f2652e);
+  background: #22252b;
+  box-shadow: 0 0 0 3px rgba(242, 101, 46, 0.2);
+}
+
+.custom-clock-popup {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 100;
+  width: 100%;
+  min-width: 290px;
+  max-width: 340px;
+  background: #16171b;
+  border: 1px solid rgba(242, 101, 46, 0.35);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.85), 0 4px 12px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.2s var(--ease), transform 0.2s var(--ease), visibility 0.2s;
+}
+
+.custom-clock-wrap.is-open .custom-clock-popup {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.clock-display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #101114;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.clock-digital-time {
+  font-family: var(--font-body, "Outfit", sans-serif);
+  font-size: 22px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--orange, #f2652e);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.clock-digital-time span.time-sep {
+  animation: clockBlink 1.5s infinite;
+  color: #faf5ea;
+  font-weight: 400;
+  margin: 0 1px;
+}
+
+@keyframes clockBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; }
+}
+
+.clock-meridian-toggle {
+  display: flex;
+  gap: 4px;
+  background: #1c1e22;
+  padding: 3px;
+  border-radius: 4px;
+}
+
+.clock-ampm-btn {
+  background: transparent;
+  border: none;
+  color: #9ca3af;
+  font-family: var(--font-body, "Outfit", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.clock-ampm-btn.is-active {
+  background: var(--orange, #f2652e);
+  color: #0a0a0a;
+}
+
+.clock-columns-wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.clock-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.clock-col-label {
+  font-family: var(--font-body, "Outfit", sans-serif);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--orange, #f2652e);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.clock-grid-scroll {
+  max-height: 145px;
+  overflow-y: auto;
+  background: #101114;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--orange, #f2652e) #101114;
+}
+
+.clock-grid-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.clock-grid-scroll::-webkit-scrollbar-track {
+  background: #101114;
+}
+
+.clock-grid-scroll::-webkit-scrollbar-thumb {
+  background: rgba(242, 101, 46, 0.6);
+  border-radius: 4px;
+}
+
+.clock-chip {
+  padding: 7px 8px;
+  text-align: center;
+  font-family: var(--font-body, "Outfit", sans-serif);
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: #d1d5db;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, transform 0.15s;
+}
+
+.clock-chip:hover {
+  background: #23262d;
+  color: #fff;
+}
+
+.clock-chip.is-selected {
+  background: var(--orange, #f2652e) !important;
+  color: #0a0a0a !important;
+  font-weight: 600;
+}
+
+.clock-confirm-btn {
+  width: 100%;
+  background: var(--orange, #f2652e);
+  color: #0a0a0a;
+  border: none;
+  padding: 11px 14px;
+  border-radius: 4px;
+  font-family: var(--font-body, "Outfit", sans-serif);
+  font-size: 13.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.clock-confirm-btn:hover {
+  background: #fff;
+  color: #0a0a0a;
+}
+
 .contact-framer-submit {
   width: 100%;
   background: var(--orange, #f2652e);
@@ -2758,13 +2998,177 @@ body.menu-open .mobile-menu {
   cursor: pointer;
   border-radius: 4px;
   margin-top: 8px;
-  transition: transform 0.2s var(--ease), background-color 0.2s var(--ease), color 0.2s var(--ease);
+  transition: transform 0.2s var(--ease), background-color 0.2s var(--ease), color 0.2s var(--ease), opacity 0.2s;
 }
 
-.contact-framer-submit:hover {
+.contact-framer-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.contact-framer-submit:hover:not(:disabled) {
   background: #fff;
   color: var(--black, #0a0a0a);
   transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   APPOINTMENT BOOKING STATUS MODAL (SUCCESS & CONFLICT POPUP)
+   ========================================================================== */
+
+.booking-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(8, 9, 11, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s var(--ease), visibility 0.3s;
+}
+
+.booking-modal-backdrop.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.booking-modal-card {
+  width: 100%;
+  max-width: 480px;
+  background: #14161a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 36px 32px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 4px 16px rgba(0, 0, 0, 0.4);
+  transform: scale(0.92) translateY(12px);
+  transition: transform 0.3s var(--ease);
+  position: relative;
+  text-align: center;
+}
+
+.booking-modal-backdrop.is-visible .booking-modal-card {
+  transform: scale(1) translateY(0);
+}
+
+.booking-modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.booking-modal-card.is-conflict {
+  border-color: rgba(242, 101, 46, 0.7);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(242, 101, 46, 0.2);
+}
+
+.booking-modal-card.is-conflict .booking-modal-icon {
+  background: rgba(242, 101, 46, 0.15);
+  color: var(--orange, #f2652e);
+  border: 1px solid rgba(242, 101, 46, 0.4);
+}
+
+.booking-modal-card.is-success {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85), 0 0 24px rgba(34, 197, 94, 0.2);
+}
+
+.booking-modal-card.is-success .booking-modal-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.booking-modal-card.is-error {
+  border-color: rgba(239, 68, 68, 0.6);
+}
+
+.booking-modal-card.is-error .booking-modal-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.booking-modal-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  color: #fff;
+  margin-bottom: 12px;
+}
+
+.booking-modal-desc {
+  color: #cfd3dc;
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: 26px;
+}
+
+.booking-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.booking-modal-btn {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: transform 0.2s var(--ease), background-color 0.2s, color 0.2s;
+}
+
+.booking-modal-btn--primary {
+  background: var(--orange, #f2652e);
+  color: #0a0a0a;
+}
+
+.booking-modal-btn--primary:hover {
+  background: #fff;
+  color: #0a0a0a;
+  transform: translateY(-2px);
+}
+
+.booking-modal-btn--whatsapp {
+  background: #25d366;
+  color: #0a0a0a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.booking-modal-btn--whatsapp:hover {
+  background: #22c35e;
+  color: #000;
+  transform: translateY(-2px);
+}
+
+.booking-modal-btn--ghost {
+  background: transparent;
+  color: #9ca3af;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.booking-modal-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
 }
 
 /* Location details below the form */
@@ -2921,7 +3325,8 @@ iframe {
   .contact-framer-field select,
   .contact-framer-field textarea,
   .custom-select-trigger,
-  .custom-calendar-trigger {
+  .custom-calendar-trigger,
+  .custom-clock-trigger {
     font-size: 16px; /* Prevents auto-zoom in iOS Safari */
     padding: 12px 14px;
   }

@@ -280,7 +280,105 @@
     });
   }
 
-  /* ---- contact form & WhatsApp integration --------------------------- */
+  /* ---- Google Apps Script Endpoint & Appointment Conflict System ---- */
+  var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzZzwmbL26Y88JohpGJ6ovHbEx5rXLWHytgnGFk7DpMyc8UfFbCZ-BL24ZFMldxbhDQg/exec"; // Paste your deployed Google Apps Script Web App URL here
+
+  /* ---- Modal Popup Handler for Conflicts & Booking Success ---- */
+  function showBookingModal(config) {
+    var existing = document.getElementById("bookingModalBackdrop");
+    if (existing) existing.remove();
+
+    var backdrop = document.createElement("div");
+    backdrop.id = "bookingModalBackdrop";
+    backdrop.className = "booking-modal-backdrop";
+
+    var card = document.createElement("div");
+    card.className = "booking-modal-card is-" + (config.type || "success");
+
+    var iconChar = config.type === "conflict" ? "⚠️" : (config.type === "error" ? "❌" : "✓");
+    var iconEl = document.createElement("div");
+    iconEl.className = "booking-modal-icon";
+    iconEl.textContent = iconChar;
+
+    var titleEl = document.createElement("h3");
+    titleEl.className = "booking-modal-title";
+    titleEl.textContent = config.title || "Appointment Status";
+
+    var descEl = document.createElement("p");
+    descEl.className = "booking-modal-desc";
+    descEl.innerHTML = config.message || "";
+
+    var actionsEl = document.createElement("div");
+    actionsEl.className = "booking-modal-actions";
+
+    if (config.type === "conflict") {
+      var changeBtn = document.createElement("button");
+      changeBtn.type = "button";
+      changeBtn.className = "booking-modal-btn booking-modal-btn--primary";
+      changeBtn.textContent = "Change Time / Stylist";
+      changeBtn.addEventListener("click", function () {
+        backdrop.classList.remove("is-visible");
+        setTimeout(function () { backdrop.remove(); }, 300);
+        var timeEl = document.getElementById("bookingTime");
+        if (timeEl) {
+          var trigger = timeEl.closest(".custom-clock-wrap") ? timeEl.closest(".custom-clock-wrap").querySelector(".custom-clock-trigger") : (timeEl.closest(".custom-select-wrap") ? timeEl.closest(".custom-select-wrap").querySelector(".custom-select-trigger") : timeEl);
+          if (trigger) trigger.focus();
+        }
+      });
+      actionsEl.appendChild(changeBtn);
+    } else if (config.type === "success") {
+      if (config.waUrl) {
+        var waBtn = document.createElement("a");
+        waBtn.href = config.waUrl;
+        waBtn.target = "_blank";
+        waBtn.rel = "noopener noreferrer";
+        waBtn.className = "booking-modal-btn booking-modal-btn--whatsapp";
+        waBtn.innerHTML = "💬 Send Confirmation on WhatsApp";
+        actionsEl.appendChild(waBtn);
+      }
+
+      var doneBtn = document.createElement("button");
+      doneBtn.type = "button";
+      doneBtn.className = "booking-modal-btn booking-modal-btn--primary";
+      doneBtn.textContent = "Done";
+      doneBtn.addEventListener("click", function () {
+        backdrop.classList.remove("is-visible");
+        setTimeout(function () { backdrop.remove(); }, 300);
+      });
+      actionsEl.appendChild(doneBtn);
+    } else {
+      var closeBtn = document.createElement("button");
+      closeBtn.type = "button";
+      closeBtn.className = "booking-modal-btn booking-modal-btn--primary";
+      closeBtn.textContent = "Try Again";
+      closeBtn.addEventListener("click", function () {
+        backdrop.classList.remove("is-visible");
+        setTimeout(function () { backdrop.remove(); }, 300);
+      });
+      actionsEl.appendChild(closeBtn);
+    }
+
+    card.appendChild(iconEl);
+    card.appendChild(titleEl);
+    card.appendChild(descEl);
+    card.appendChild(actionsEl);
+    backdrop.appendChild(card);
+    document.body.appendChild(backdrop);
+
+    // Trigger smooth fade-in
+    setTimeout(function () {
+      backdrop.classList.add("is-visible");
+    }, 10);
+
+    backdrop.addEventListener("click", function (e) {
+      if (e.target === backdrop) {
+        backdrop.classList.remove("is-visible");
+        setTimeout(function () { backdrop.remove(); }, 300);
+      }
+    });
+  }
+
+  /* ---- contact form & Google Sheets / WhatsApp integration ---------------- */
   var bookingDateInput = document.getElementById("bookingDate");
   if (bookingDateInput) {
     try {
@@ -289,24 +387,27 @@
       if (!bookingDateInput.value) {
         bookingDateInput.value = todayStr;
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   var contactForm = document.getElementById("contactForm") || document.querySelector("form[data-contact]");
   if (contactForm) {
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      var feedback = document.getElementById("formFeedback") || contactForm.querySelector(".form-note");
+
+      var submitBtn = contactForm.querySelector('button[type="submit"]') || contactForm.querySelector(".contact-framer-submit");
+      var originalBtnText = submitBtn ? submitBtn.textContent : "Submit";
+
       var name = document.getElementById("name") ? document.getElementById("name").value.trim() : "Guest";
       var phone = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
       var email = document.getElementById("email") ? document.getElementById("email").value.trim() : "";
       var service = document.getElementById("service") ? document.getElementById("service").value : "General Inquiry";
-      var stylist = document.getElementById("stylist") ? document.getElementById("stylist").value : "Any Available Stylist";
+      var stylist = document.getElementById("stylist") ? document.getElementById("stylist").value : "Harshal Bhai — Master Barber & Hair Specialist";
       var bookingDate = document.getElementById("bookingDate") ? document.getElementById("bookingDate").value : "";
       var bookingTime = document.getElementById("bookingTime") ? document.getElementById("bookingTime").value : "";
       var notes = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
 
-      // Format WhatsApp message
+      // Format WhatsApp message for backup/direct messaging
       var waMsg = "Hello Sai Darshan Salon! I would like to book an appointment:\n\n" +
         "👤 *Name:* " + name + "\n" +
         "📞 *Phone:* " + phone + "\n" +
@@ -320,19 +421,114 @@
 
       var waUrl = "https://api.whatsapp.com/send?phone=919662281908&text=" + encodeURIComponent(waMsg);
 
-      if (feedback) {
-        feedback.style.display = "block";
-        feedback.innerHTML = "✓ Thank you, <strong>" + name + "</strong>! Opening WhatsApp to connect with our concierge... <br /><small style='color:#cfd3dc; margin-top:4px; display:inline-block;'>If WhatsApp did not open automatically, <a href='" + waUrl + "' target='_blank' rel='noopener noreferrer' style='color:var(--orange); text-decoration:underline;'>click here to message +91 96622 81908</a>.</small>";
+      var payload = {
+        name: name,
+        phone: phone,
+        email: email,
+        service: service,
+        stylist: stylist,
+        bookingDate: bookingDate,
+        bookingTime: bookingTime,
+        notes: notes
+      };
+
+      // 1. Prevent duplicate submissions while processing
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Checking availability...";
       }
 
-      // Open WhatsApp in new tab
-      try {
-        window.open(waUrl, "_blank", "noopener,noreferrer");
-      } catch (err) {
-        // Popups might be blocked
-      }
+      // If Google Apps Script URL is configured, perform server-side lock & conflict check
+      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.indexOf("http") === 0) {
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(function (response) {
+            return response.json();
+          })
+          .then(function (result) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
 
-      contactForm.reset();
+            if (result.success) {
+              // Success: Slot available and saved to Google Sheets
+              showBookingModal({
+                type: "success",
+                title: "Appointment Booked Successfully",
+                message: "Your appointment has been successfully confirmed and recorded in our calendar.<br /><br /><strong>Date:</strong> " + (result.date || bookingDate) + "<br /><strong>Time:</strong> " + (result.time || bookingTime) + "<br /><strong>Stylist:</strong> " + (result.stylist || stylist),
+                waUrl: waUrl
+              });
+
+              // Reset form fields
+              contactForm.reset();
+              if (bookingDateInput) {
+                bookingDateInput.value = new Date().toISOString().split("T")[0];
+                bookingDateInput.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+            } else if (result.conflict) {
+              // Conflict: Stylist already booked on this slot
+              showBookingModal({
+                type: "conflict",
+                title: "Appointment Unavailable",
+                message: (result.message || "This stylist is already booked for the selected date and time.") + "<br /><br />Please choose another preferred time slot, change the date, or select another master stylist."
+              });
+              // Keep user's entered form data intact
+            } else {
+              // Generic server/validation error
+              showBookingModal({
+                type: "error",
+                title: "Booking Error",
+                message: result.message || "Unable to process the appointment. Please try again or message us on WhatsApp."
+              });
+            }
+          })
+          .catch(function (error) {
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = originalBtnText;
+            }
+
+            // Fallback for network issues or redirect
+            showBookingModal({
+              type: "error",
+              title: "Network Notice",
+              message: "We encountered a temporary connection issue. You can instantly book your slot directly via our official WhatsApp concierge below:",
+              waUrl: waUrl
+            });
+          });
+      } else {
+        // Direct WhatsApp / local preview confirmation when script URL is awaiting deployment
+        setTimeout(function () {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+
+          showBookingModal({
+            type: "success",
+            title: "Appointment Booked Successfully",
+            message: "Your appointment details have been prepared for <strong>" + name + "</strong> with <strong>" + stylist + "</strong> on <strong>" + bookingDate + " (" + bookingTime + ")</strong>.<br /><br />Opening WhatsApp to connect with our concierge...",
+            waUrl: waUrl
+          });
+
+          try {
+            window.open(waUrl, "_blank", "noopener,noreferrer");
+          } catch (err) { }
+
+          contactForm.reset();
+          if (bookingDateInput) {
+            bookingDateInput.value = new Date().toISOString().split("T")[0];
+            bookingDateInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        }, 500);
+      }
     });
   }
 
@@ -350,7 +546,7 @@
       var trigger = document.createElement("div");
       trigger.className = "custom-select-trigger";
       trigger.setAttribute("tabindex", "0");
-      
+
       var selectedOpt = select.options[select.selectedIndex] || select.options[0];
       trigger.textContent = selectedOpt ? selectedOpt.textContent : "Select Option";
       wrap.appendChild(trigger);
@@ -566,7 +762,7 @@
     trigger.addEventListener("click", function (e) {
       e.stopPropagation();
       var isOpen = wrap.classList.contains("is-open");
-      document.querySelectorAll(".custom-select-wrap, .custom-calendar-wrap").forEach(function (w) {
+      document.querySelectorAll(".custom-select-wrap, .custom-calendar-wrap, .custom-clock-wrap").forEach(function (w) {
         w.classList.remove("is-open");
       });
       if (!isOpen) {
@@ -578,9 +774,179 @@
     });
   }
 
+  /* ---- Custom Clock & Free Time Picker Enhancer ---- */
+  function initCustomClockPicker() {
+    var timeInput = document.getElementById("bookingTime");
+    if (!timeInput || timeInput.closest(".custom-clock-wrap")) return;
+
+    var wrap = document.createElement("div");
+    wrap.className = "custom-clock-wrap";
+    timeInput.parentNode.insertBefore(wrap, timeInput);
+    wrap.appendChild(timeInput);
+
+    var trigger = document.createElement("div");
+    trigger.className = "custom-clock-trigger";
+    trigger.setAttribute("tabindex", "0");
+    trigger.textContent = timeInput.value || "Select Time (e.g. 02:30 PM)";
+    wrap.appendChild(trigger);
+
+    var popup = document.createElement("div");
+    popup.className = "custom-clock-popup";
+    wrap.appendChild(popup);
+
+    var selectedHour = 2;
+    var selectedMinute = 30;
+    var selectedMeridian = "PM";
+
+    // If input already has a value, parse it
+    if (timeInput.value) {
+      var match = timeInput.value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+      if (match) {
+        selectedHour = parseInt(match[1], 10);
+        selectedMinute = parseInt(match[2], 10);
+        if (match[3]) selectedMeridian = match[3].toUpperCase();
+      }
+    }
+
+    function formatFormattedTime() {
+      var hStr = String(selectedHour).padStart(2, "0");
+      var mStr = String(selectedMinute).padStart(2, "0");
+      return hStr + ":" + mStr + " " + selectedMeridian;
+    }
+
+    function updateTimeValue(closePopup) {
+      var formatted = formatFormattedTime();
+      timeInput.value = formatted;
+      trigger.textContent = formatted;
+      timeInput.dispatchEvent(new Event("change", { bubbles: true }));
+      if (closePopup) {
+        wrap.classList.remove("is-open");
+      }
+    }
+
+    function renderClock() {
+      popup.innerHTML = "";
+
+      // Digital Header Display
+      var header = document.createElement("div");
+      header.className = "clock-display-header";
+
+      var digital = document.createElement("div");
+      digital.className = "clock-digital-time";
+      digital.innerHTML = "<span>" + String(selectedHour).padStart(2, "0") + "</span><span class='time-sep'>:</span><span>" + String(selectedMinute).padStart(2, "0") + "</span>";
+
+      var toggle = document.createElement("div");
+      toggle.className = "clock-meridian-toggle";
+
+      ["AM", "PM"].forEach(function (m) {
+        var ampmBtn = document.createElement("button");
+        ampmBtn.type = "button";
+        ampmBtn.className = "clock-ampm-btn" + (selectedMeridian === m ? " is-active" : "");
+        ampmBtn.textContent = m;
+        ampmBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          selectedMeridian = m;
+          renderClock();
+        });
+        toggle.appendChild(ampmBtn);
+      });
+
+      header.appendChild(digital);
+      header.appendChild(toggle);
+      popup.appendChild(header);
+
+      // Columns wrap (Hours + Minutes)
+      var colsWrap = document.createElement("div");
+      colsWrap.className = "clock-columns-wrap";
+
+      // Hours Col (01 - 12)
+      var hourCol = document.createElement("div");
+      hourCol.className = "clock-col";
+      var hourLabel = document.createElement("div");
+      hourLabel.className = "clock-col-label";
+      hourLabel.textContent = "Hour";
+      hourCol.appendChild(hourLabel);
+
+      var hourScroll = document.createElement("div");
+      hourScroll.className = "clock-grid-scroll";
+      for (var h = 1; h <= 12; h++) {
+        var chipH = document.createElement("div");
+        chipH.className = "clock-chip" + (selectedHour === h ? " is-selected" : "");
+        chipH.textContent = String(h).padStart(2, "0");
+        (function (valH) {
+          chipH.addEventListener("click", function (e) {
+            e.stopPropagation();
+            selectedHour = valH;
+            renderClock();
+          });
+        })(h);
+        hourScroll.appendChild(chipH);
+      }
+      hourCol.appendChild(hourScroll);
+      colsWrap.appendChild(hourCol);
+
+      // Minutes Col (00, 05, 10, ... 55)
+      var minCol = document.createElement("div");
+      minCol.className = "clock-col";
+      var minLabel = document.createElement("div");
+      minLabel.className = "clock-col-label";
+      minLabel.textContent = "Minute";
+      minCol.appendChild(minLabel);
+
+      var minScroll = document.createElement("div");
+      minScroll.className = "clock-grid-scroll";
+      for (var m = 0; m < 60; m += 5) {
+        var chipM = document.createElement("div");
+        chipM.className = "clock-chip" + (selectedMinute === m ? " is-selected" : "");
+        chipM.textContent = String(m).padStart(2, "0");
+        (function (valM) {
+          chipM.addEventListener("click", function (e) {
+            e.stopPropagation();
+            selectedMinute = valM;
+            renderClock();
+          });
+        })(m);
+        minScroll.appendChild(chipM);
+      }
+      minCol.appendChild(minScroll);
+      colsWrap.appendChild(minCol);
+
+      popup.appendChild(colsWrap);
+
+      // Confirm / Set Time Button
+      var confirmBtn = document.createElement("button");
+      confirmBtn.type = "button";
+      confirmBtn.className = "clock-confirm-btn";
+      confirmBtn.textContent = "Set Time (" + formatFormattedTime() + ")";
+      confirmBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        updateTimeValue(true);
+      });
+      popup.appendChild(confirmBtn);
+    }
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      var isOpen = wrap.classList.contains("is-open");
+      document.querySelectorAll(".custom-select-wrap, .custom-calendar-wrap, .custom-clock-wrap").forEach(function (w) {
+        w.classList.remove("is-open");
+      });
+      if (!isOpen) {
+        renderClock();
+        wrap.classList.add("is-open");
+      }
+    });
+
+    timeInput.addEventListener("change", function () {
+      if (timeInput.value) {
+        trigger.textContent = timeInput.value;
+      }
+    });
+  }
+
   // Global click to close custom dropdowns
   document.addEventListener("click", function () {
-    document.querySelectorAll(".custom-select-wrap, .custom-calendar-wrap").forEach(function (w) {
+    document.querySelectorAll(".custom-select-wrap, .custom-calendar-wrap, .custom-clock-wrap").forEach(function (w) {
       w.classList.remove("is-open");
     });
   });
@@ -588,6 +954,7 @@
   // Initialize custom components
   initCustomSelects();
   initCustomCalendar();
+  initCustomClockPicker();
 
   /* ---- preselect service on contact page (URL query param or sessionStorage) ---- */
   var serviceSelect = document.getElementById("service");
@@ -606,7 +973,7 @@
         selectedService = sessionStorage.getItem("selectedService") || "";
         sessionStorage.removeItem("selectedService");
       }
-    } catch (e) {}
+    } catch (e) { }
 
     if (selectedService) {
       var targetClean = cleanStr(selectedService);
