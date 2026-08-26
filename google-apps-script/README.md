@@ -31,7 +31,7 @@ This Google Apps Script backend provides **atomic double-booking prevention** an
 In [`c:/Users/ilesh/OneDrive/Desktop/SaiDarshan/js/main.js`](file:///c:/Users/ilesh/OneDrive/Desktop/SaiDarshan/js/main.js), update the `GOOGLE_SCRIPT_URL` variable at the top of the contact form handler with your deployed Web App URL:
 
 ```javascript
-var GOOGLE_SCRIPT_URL = "YOUR_DEPLOYED_WEB_APP_URL_HERE";
+var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjKze7kVcSYEXiaAEX8pLJd9341EiPyqLmnMVgkabUz-YI52Cv5AEy6tH5b5euU_Tkcw/exec";
 ```
 
 ---

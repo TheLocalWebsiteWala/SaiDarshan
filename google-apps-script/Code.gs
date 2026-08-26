@@ -47,6 +47,44 @@ var CONFIG = {
  * Handle HTTP POST requests from the website form
  */
 function doPost(e) {
+  var data = parseRequestData(e);
+  return processBooking(data, null);
+}
+
+/**
+ * Handle HTTP GET requests (supports JSONP, GET bookings, connection verification)
+ */
+function doGet(e) {
+  var params = (e && e.parameter) ? e.parameter : {};
+  var callback = params.callback;
+
+  // 1. If checking availability only
+  if (params.check === "availability") {
+    var sheet = getOrCreateAppointmentsSheet();
+    var date = normalizeDate(params.date);
+    var timeInterval = parseTimeInterval(params.time);
+    var stylist = normalizeStylist(params.stylist);
+    var res = checkAppointmentAvailability(sheet, date, timeInterval, stylist);
+    return createJsonResponse(res, callback);
+  }
+
+  // 2. If submitting a booking via GET / JSONP
+  if (params.action === "book" || params.name) {
+    return processBooking(params, callback);
+  }
+
+  // 3. Status Ping
+  return createJsonResponse({
+    status: "online",
+    service: "Sai Darshan Salon Booking API",
+    message: "Google Apps Script backend is active and ready for appointment bookings."
+  }, callback);
+}
+
+/**
+ * Core atomic booking processor with LockService
+ */
+function processBooking(data, callback) {
   var lock = LockService.getScriptLock();
   
   try {
@@ -57,36 +95,34 @@ function doPost(e) {
         success: false,
         conflict: false,
         message: "Server is currently busy processing bookings. Please try again in a few seconds."
-      });
+      }, callback);
     }
 
-    // 1. Parse incoming request data
-    var data = parseRequestData(e);
     if (!data) {
       return createJsonResponse({
         success: false,
         conflict: false,
         message: "Invalid booking data received."
-      });
+      }, callback);
     }
 
-    // 2. Validate required fields
+    // 1. Validate required fields
     var validationError = validateBookingData(data);
     if (validationError) {
       return createJsonResponse({
         success: false,
         conflict: false,
         message: validationError
-      });
+      }, callback);
     }
 
-    // 3. Get or initialize Appointments sheet
+    // 2. Get or initialize Appointments sheet
     var sheet = getOrCreateAppointmentsSheet();
 
-    // 4. Normalize incoming parameters
+    // 3. Normalize incoming parameters
     var normalizedDate = normalizeDate(data.bookingDate || data.date);
     var newTimeInterval = parseTimeInterval(data.bookingTime || data.time);
-    var rawStylist = data.stylist || "Any Available Master Stylist";
+    var rawStylist = data.stylist || CONFIG.KNOWN_STYLISTS[0];
     var normalizedStylist = normalizeStylist(rawStylist);
 
     if (!normalizedDate) {
@@ -94,7 +130,7 @@ function doPost(e) {
         success: false,
         conflict: false,
         message: "Invalid appointment date format."
-      });
+      }, callback);
     }
 
     if (!newTimeInterval) {
@@ -102,13 +138,13 @@ function doPost(e) {
         success: false,
         conflict: false,
         message: "Invalid appointment time format."
-      });
+      }, callback);
     }
 
-    // 5. Check appointment availability & conflicts
+    // 4. Check appointment availability & conflicts
     var availability = checkAppointmentAvailability(sheet, normalizedDate, newTimeInterval, normalizedStylist);
 
-    // 6. If conflict detected, return clear conflict response (Do not insert into sheet)
+    // 5. If conflict detected, return clear conflict response (Do not insert into sheet)
     if (!availability.isAvailable) {
       return createJsonResponse({
         success: false,
@@ -117,19 +153,19 @@ function doPost(e) {
         date: normalizedDate,
         time: data.bookingTime || data.time,
         message: availability.message || "This stylist is already booked for the selected date and time. Please choose another preferred time or select another date."
-      });
+      }, callback);
     }
 
-    // 7. If available, assign actual stylist (if 'Any' was selected, assign the free one)
+    // 6. Assign stylist
     var assignedStylist = availability.assignedStylist || rawStylist;
 
-    // 8. Create appointment row in Google Sheets
+    // 7. Create appointment row in Google Sheets
     var appointmentId = generateAppointmentId();
-    var createdAppointment = createAppointment(sheet, {
+    createAppointment(sheet, {
       appointmentId: appointmentId,
-      name: data.name.trim(),
-      phone: data.phone.trim(),
-      email: (data.email || "").trim(),
+      name: String(data.name).trim(),
+      phone: String(data.phone).trim(),
+      email: data.email ? String(data.email).trim() : "",
       service: data.service || "General Salon Service",
       stylist: assignedStylist,
       appointmentDate: normalizedDate,
@@ -139,7 +175,7 @@ function doPost(e) {
       createdAt: new Date()
     });
 
-    // 9. Return success response
+    // 8. Return success response
     return createJsonResponse({
       success: true,
       conflict: false,
@@ -148,42 +184,20 @@ function doPost(e) {
       date: normalizedDate,
       time: data.bookingTime || data.time,
       message: "Appointment booked successfully! Your appointment has been successfully submitted."
-    });
+    }, callback);
 
   } catch (error) {
-    Logger.log("Error in doPost: " + error.toString());
+    Logger.log("Error in processBooking: " + error.toString());
     return createJsonResponse({
       success: false,
       conflict: false,
       message: "Unable to process the appointment. Please try again."
-    });
+    }, callback);
   } finally {
-    // Release the script lock
     try {
       lock.releaseLock();
     } catch (e) {}
   }
-}
-
-/**
- * Handle HTTP GET requests for testing / connection verification
- */
-function doGet(e) {
-  // Support checking availability via GET or simple ping
-  if (e && e.parameter && e.parameter.check === "availability") {
-    var sheet = getOrCreateAppointmentsSheet();
-    var date = normalizeDate(e.parameter.date);
-    var timeInterval = parseTimeInterval(e.parameter.time);
-    var stylist = normalizeStylist(e.parameter.stylist);
-    var res = checkAppointmentAvailability(sheet, date, timeInterval, stylist);
-    return createJsonResponse(res);
-  }
-
-  return createJsonResponse({
-    status: "online",
-    service: "Sai Darshan Salon Booking API",
-    message: "Google Apps Script backend is active and ready for appointment bookings."
-  });
 }
 
 /**
@@ -232,20 +246,30 @@ function validateBookingData(data) {
  */
 function checkAppointmentAvailability(sheet, targetDate, newTimeInterval, targetStylistKey) {
   var dataRange = sheet.getDataRange();
-  var values = dataRange.getValues();
+  var values = dataRange.getDisplayValues(); // Reads exact formatted text from sheet
 
   // If only header row exists, sheet is completely free
   if (values.length <= 1) {
-    var defaultStylist = targetStylistKey === "any" ? CONFIG.KNOWN_STYLISTS[0] : null;
-    return { isAvailable: true, assignedStylist: defaultStylist };
+    return { isAvailable: true, assignedStylist: CONFIG.KNOWN_STYLISTS[0] };
   }
 
-  // Column indexes based on CONFIG.HEADERS
-  var colDate = 6;      // Index 6: Appointment Date
-  var colTime = 7;      // Index 7: Appointment Time
-  var colStylist = 5;   // Index 5: Stylist/Artist
+  // Dynamically find column indices from header row
+  var headers = values[0];
+  var colDate = -1;
+  var colTime = -1;
+  var colStylist = -1;
 
-  var bookedStylistsOnSlot = {};
+  for (var c = 0; c < headers.length; c++) {
+    var h = String(headers[c]).toLowerCase().trim();
+    if (h.indexOf("date") !== -1) colDate = c;
+    else if (h.indexOf("time") !== -1) colTime = c;
+    else if (h.indexOf("stylist") !== -1 || h.indexOf("artist") !== -1) colStylist = c;
+  }
+
+  // Fallback defaults based on standard headers (Col F=5, Col G=6, Col H=7)
+  if (colDate === -1) colDate = 6;
+  if (colTime === -1) colTime = 7;
+  if (colStylist === -1) colStylist = 5;
 
   for (var i = 1; i < values.length; i++) {
     var row = values[i];
@@ -267,10 +291,9 @@ function checkAppointmentAvailability(sheet, targetDate, newTimeInterval, target
     var hasOverlap = checkTimeOverlap(newTimeInterval, rowTimeInterval);
     if (hasOverlap) {
       var rowStylistKey = normalizeStylist(rowStylistRaw);
-      bookedStylistsOnSlot[rowStylistKey] = true;
 
-      // If customer requested a specific stylist and that stylist is already booked
-      if (targetStylistKey !== "any" && rowStylistKey === targetStylistKey) {
+      // If requested stylist matches this booked stylist
+      if (rowStylistKey === targetStylistKey) {
         return {
           isAvailable: false,
           conflictingStylist: rowStylistRaw,
@@ -280,28 +303,7 @@ function checkAppointmentAvailability(sheet, targetDate, newTimeInterval, target
     }
   }
 
-  // If customer selected "Any Available Stylist"
-  if (targetStylistKey === "any") {
-    // Find the first known stylist who is not booked during this time
-    for (var s = 0; s < CONFIG.KNOWN_STYLISTS.length; s++) {
-      var candidate = CONFIG.KNOWN_STYLISTS[s];
-      var candidateKey = normalizeStylist(candidate);
-      if (!bookedStylistsOnSlot[candidateKey]) {
-        return {
-          isAvailable: true,
-          assignedStylist: candidate
-        };
-      }
-    }
-    // All stylists are booked for this slot
-    return {
-      isAvailable: false,
-      conflictingStylist: "All Stylists",
-      message: "All stylists are fully booked for the selected date and time slot. Please choose another time or date."
-    };
-  }
-
-  // Selected specific stylist is available
+  // Selected stylist is available
   return {
     isAvailable: true
   };
@@ -338,14 +340,12 @@ function normalizeDate(dateVal) {
     return str;
   }
 
-  // Format: DD-MM-YYYY or DD/MM/YYYY
+  // Format: DD-MM-YYYY or DD/MM/YYYY or YYYY/MM/DD
   var parts = str.split(/[-\/]/);
   if (parts.length === 3) {
     if (parts[0].length === 4) {
-      // YYYY/MM/DD
       return parts[0] + "-" + ("0" + parts[1]).slice(-2) + "-" + ("0" + parts[2]).slice(-2);
     } else if (parts[2].length === 4) {
-      // DD-MM-YYYY
       return parts[2] + "-" + ("0" + parts[1]).slice(-2) + "-" + ("0" + parts[0]).slice(-2);
     }
   }
@@ -363,13 +363,15 @@ function normalizeDate(dateVal) {
 
 /**
  * Parse time string into minutes from midnight: { start: number, end: number }
- * Supports formats:
- * - "09:00 AM – 11:00 AM" (range)
- * - "2:00 PM" (single time -> defaults to 1 hour duration: 14:00 - 15:00)
- * - "14:00"
  */
 function parseTimeInterval(timeStr) {
   if (!timeStr) return null;
+
+  if (timeStr instanceof Date) {
+    var s = timeStr.getHours() * 60 + timeStr.getMinutes();
+    return { start: s, end: s + CONFIG.DEFAULT_DURATION_MINUTES };
+  }
+
   var str = String(timeStr).trim();
 
   // Check if string contains a range separator (–, -, to)
@@ -380,7 +382,7 @@ function parseTimeInterval(timeStr) {
     var endMin = parseSingleTimeToMinutes(rangeParts[1].trim());
 
     if (startMin !== null && endMin !== null) {
-      if (endMin <= startMin) endMin += 1440; // Handle overnight edge cases
+      if (endMin <= startMin) endMin += 1440;
       return { start: startMin, end: endMin };
     }
   }
@@ -398,26 +400,41 @@ function parseTimeInterval(timeStr) {
 }
 
 /**
- * Convert time string (e.g. "02:00 PM", "9:30 AM", "14:00") into minutes from midnight (0 - 1440)
+ * Convert time string (e.g. "02:05 PM", "2:05 PM", "9:30 AM", "14:05") into minutes from midnight (0 - 1440)
  */
 function parseSingleTimeToMinutes(timePart) {
-  if (!timePart) return null;
-  var t = String(timePart).trim().toUpperCase();
+  if (!timePart && timePart !== 0) return null;
 
-  // Match e.g. "02:30 PM", "2 PM", "09:00 AM", "14:30"
-  var match = t.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
-  if (!match) return null;
-
-  var hours = parseInt(match[1], 10);
-  var minutes = match[2] ? parseInt(match[2], 10) : 0;
-  var meridian = match[3] ? match[3].toUpperCase() : null;
-
-  if (meridian) {
-    if (meridian === "PM" && hours < 12) hours += 12;
-    if (meridian === "AM" && hours === 12) hours = 0;
+  if (timePart instanceof Date) {
+    return timePart.getHours() * 60 + timePart.getMinutes();
   }
 
-  return hours * 60 + minutes;
+  var t = String(timePart).trim().toUpperCase();
+
+  // Match e.g. "02:05 PM", "2:05 PM", "14:05"
+  var match = t.match(/(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?/i);
+  if (match) {
+    var hours = parseInt(match[1], 10);
+    var minutes = parseInt(match[2], 10);
+    var meridian = match[3] ? match[3].toUpperCase() : null;
+
+    if (meridian) {
+      if (meridian === "PM" && hours < 12) hours += 12;
+      if (meridian === "AM" && hours === 12) hours = 0;
+    }
+    return hours * 60 + minutes;
+  }
+
+  var matchSingle = t.match(/(\d{1,2})\s*(AM|PM)/i);
+  if (matchSingle) {
+    var hours = parseInt(matchSingle[1], 10);
+    var meridian = matchSingle[2].toUpperCase();
+    if (meridian === "PM" && hours < 12) hours += 12;
+    if (meridian === "AM" && hours === 12) hours = 0;
+    return hours * 60;
+  }
+
+  return null;
 }
 
 /**
@@ -489,9 +506,16 @@ function getOrCreateAppointmentsSheet() {
 }
 
 /**
- * Helper to construct JSON response
+ * Helper to construct JSON or JSONP response
  */
-function createJsonResponse(data) {
+function createJsonResponse(data, callback) {
+  if (callback && typeof callback === "string") {
+    var safeCallback = callback.replace(/[^a-zA-Z0-9_]/g, "");
+    return ContentService
+      .createTextOutput(safeCallback + "(" + JSON.stringify(data) + ")")
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
   return ContentService
     .createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);

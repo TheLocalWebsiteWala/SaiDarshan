@@ -281,7 +281,7 @@
   }
 
   /* ---- Google Apps Script Endpoint & Appointment Conflict System ---- */
-  var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzzZzwmbL26Y88JohpGJ6ovHbEx5rXLWHytgnGFk7DpMyc8UfFbCZ-BL24ZFMldxbhDQg/exec"; // Paste your deployed Google Apps Script Web App URL here
+  var GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwjKze7kVcSYEXiaAEX8pLJd9341EiPyqLmnMVgkabUz-YI52Cv5AEy6tH5b5euU_Tkcw/exec"; // Paste your deployed Google Apps Script Web App URL here
 
   /* ---- Modal Popup Handler for Conflicts & Booking Success ---- */
   function showBookingModal(config) {
@@ -438,71 +438,94 @@
         submitBtn.textContent = "Checking availability...";
       }
 
-      // If Google Apps Script URL is configured, perform server-side lock & conflict check
-      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.indexOf("http") === 0) {
-        fetch(GOOGLE_SCRIPT_URL, {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            "Content-Type": "text/plain;charset=utf-8"
-          },
-          body: JSON.stringify(payload)
-        })
-          .then(function (response) {
-            return response.json();
-          })
-          .then(function (result) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = originalBtnText;
-            }
+      function handleBookingResponse(result) {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+        }
 
-            if (result.success) {
-              // Success: Slot available and saved to Google Sheets
-              showBookingModal({
-                type: "success",
-                title: "Appointment Booked Successfully",
-                message: "Your appointment has been successfully confirmed and recorded in our calendar.<br /><br /><strong>Date:</strong> " + (result.date || bookingDate) + "<br /><strong>Time:</strong> " + (result.time || bookingTime) + "<br /><strong>Stylist:</strong> " + (result.stylist || stylist),
-                waUrl: waUrl
-              });
-
-              // Reset form fields
-              contactForm.reset();
-              if (bookingDateInput) {
-                bookingDateInput.value = new Date().toISOString().split("T")[0];
-                bookingDateInput.dispatchEvent(new Event("change", { bubbles: true }));
-              }
-            } else if (result.conflict) {
-              // Conflict: Stylist already booked on this slot
-              showBookingModal({
-                type: "conflict",
-                title: "Appointment Unavailable",
-                message: (result.message || "This stylist is already booked for the selected date and time.") + "<br /><br />Please choose another preferred time slot, change the date, or select another master stylist."
-              });
-              // Keep user's entered form data intact
-            } else {
-              // Generic server/validation error
-              showBookingModal({
-                type: "error",
-                title: "Booking Error",
-                message: result.message || "Unable to process the appointment. Please try again or message us on WhatsApp."
-              });
-            }
-          })
-          .catch(function (error) {
-            if (submitBtn) {
-              submitBtn.disabled = false;
-              submitBtn.textContent = originalBtnText;
-            }
-
-            // Fallback for network issues or redirect
-            showBookingModal({
-              type: "error",
-              title: "Network Notice",
-              message: "We encountered a temporary connection issue. You can instantly book your slot directly via our official WhatsApp concierge below:",
-              waUrl: waUrl
-            });
+        if (result && result.success) {
+          // Success: Slot available and saved to Google Sheets
+          showBookingModal({
+            type: "success",
+            title: "Appointment Booked Successfully",
+            message: "Your appointment has been successfully confirmed and recorded in our calendar.<br /><br /><strong>Date:</strong> " + (result.date || bookingDate) + "<br /><strong>Time:</strong> " + (result.time || bookingTime) + "<br /><strong>Stylist:</strong> " + (result.stylist || stylist),
+            waUrl: waUrl
           });
+
+          // Reset form fields
+          contactForm.reset();
+          if (bookingDateInput) {
+            bookingDateInput.value = new Date().toISOString().split("T")[0];
+            bookingDateInput.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+        } else if (result && result.conflict) {
+          // Conflict: Stylist already booked on this slot
+          showBookingModal({
+            type: "conflict",
+            title: "Appointment Unavailable",
+            message: (result.message || "This stylist is already booked for the selected date and time.") + "<br /><br />Please choose another preferred time slot, change the date, or select another master stylist."
+          });
+        } else {
+          // Generic server error
+          showBookingModal({
+            type: "error",
+            title: "Booking Error",
+            message: (result && result.message) ? result.message : "Unable to process the appointment. Please try again or message us on WhatsApp."
+          });
+        }
+      }
+
+      // If Google Apps Script URL is configured, submit via JSONP (bypasses browser CORS redirect blocks)
+      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.indexOf("http") === 0) {
+        var cbName = "sdCallback_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+        var scriptEl = document.createElement("script");
+        var timer = null;
+
+        window[cbName] = function (res) {
+          if (timer) clearTimeout(timer);
+          if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+          delete window[cbName];
+          handleBookingResponse(res);
+        };
+
+        timer = setTimeout(function () {
+          if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+          delete window[cbName];
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+          showBookingModal({
+            type: "error",
+            title: "Network Notice",
+            message: "We encountered a temporary connection issue. You can instantly book your slot directly via our official WhatsApp concierge below:",
+            waUrl: waUrl
+          });
+        }, 15000);
+
+        var queryParams = new URLSearchParams(payload);
+        queryParams.set("action", "book");
+        queryParams.set("callback", cbName);
+
+        scriptEl.src = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + queryParams.toString();
+        scriptEl.onerror = function () {
+          if (timer) clearTimeout(timer);
+          if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+          delete window[cbName];
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+          }
+          showBookingModal({
+            type: "error",
+            title: "Network Notice",
+            message: "We encountered a temporary connection issue. You can instantly book your slot directly via our official WhatsApp concierge below:",
+            waUrl: waUrl
+          });
+        };
+
+        document.head.appendChild(scriptEl);
       } else {
         // Direct WhatsApp / local preview confirmation when script URL is awaiting deployment
         setTimeout(function () {
