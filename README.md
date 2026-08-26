@@ -2,7 +2,7 @@
 
 > Premium Unisex Salon & Hair Studio located in Dindoli, Surat, Gujarat.
 
-![Sai Darshan Salon Preview](assets/img/storefront.webp)
+![Sai Darshan Salon Preview](assets/img/storefront.png)
 
 ## Overview
 
