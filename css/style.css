@@ -2708,8 +2708,10 @@ body.menu-open .mobile-menu {
   position: absolute !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  height: 0 !important;
-  width: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  clip: rect(0, 0, 0, 0) !important;
+  overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
@@ -2854,8 +2856,10 @@ body.menu-open .mobile-menu {
   position: absolute !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  height: 0 !important;
-  width: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  clip: rect(0, 0, 0, 0) !important;
+  overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
@@ -3030,11 +3034,25 @@ body.menu-open .mobile-menu {
   position: absolute !important;
   opacity: 0 !important;
   pointer-events: none !important;
-  height: 0 !important;
-  width: 0 !important;
+  width: 1px !important;
+  height: 1px !important;
+  clip: rect(0, 0, 0, 0) !important;
+  overflow: hidden !important;
   margin: 0 !important;
   padding: 0 !important;
   border: 0 !important;
+}
+
+.is-field-error {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25) !important;
+  animation: shakeField 0.3s ease-in-out;
+}
+
+@keyframes shakeField {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
 }
 
 .custom-clock-trigger {

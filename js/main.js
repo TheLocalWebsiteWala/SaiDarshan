@@ -392,22 +392,91 @@
 
   var contactForm = document.getElementById("contactForm") || document.querySelector("form[data-contact]");
   if (contactForm) {
+    // Clear validation error highlights on input
+    contactForm.addEventListener("input", function (e) {
+      if (e.target && e.target.classList) {
+        e.target.classList.remove("is-field-error");
+      }
+      var trigger = e.target.closest(".custom-select-wrap, .custom-calendar-wrap, .custom-clock-wrap");
+      if (trigger) {
+        var trigEl = trigger.querySelector(".custom-select-trigger, .custom-calendar-trigger, .custom-clock-trigger");
+        if (trigEl) trigEl.classList.remove("is-field-error");
+      }
+    });
+
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
       var submitBtn = contactForm.querySelector('button[type="submit"]') || contactForm.querySelector(".contact-framer-submit");
       var originalBtnText = submitBtn ? submitBtn.textContent : "Submit";
+      var feedbackEl = document.getElementById("formFeedback");
 
-      var name = document.getElementById("name") ? document.getElementById("name").value.trim() : "Guest";
-      var phone = document.getElementById("phone") ? document.getElementById("phone").value.trim() : "";
-      var email = document.getElementById("email") ? document.getElementById("email").value.trim() : "";
-      var service = document.getElementById("service") ? document.getElementById("service").value : "General Inquiry";
-      var stylist = document.getElementById("stylist") ? document.getElementById("stylist").value : "Harshal Bhai — Master Barber & Hair Specialist";
-      var bookingDate = document.getElementById("bookingDate") ? document.getElementById("bookingDate").value : "";
-      var bookingTime = document.getElementById("bookingTime") ? document.getElementById("bookingTime").value : "";
-      var notes = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
+      // Remove existing error styling
+      contactForm.querySelectorAll(".is-field-error").forEach(function (el) {
+        el.classList.remove("is-field-error");
+      });
+      if (feedbackEl) {
+        feedbackEl.style.display = "none";
+        feedbackEl.textContent = "";
+      }
 
-      // Format WhatsApp message for backup/direct messaging
+      var nameInput = document.getElementById("name");
+      var phoneInput = document.getElementById("phone");
+      var emailInput = document.getElementById("email");
+      var serviceInput = document.getElementById("service");
+      var stylistInput = document.getElementById("stylist");
+      var dateInput = document.getElementById("bookingDate");
+      var timeInput = document.getElementById("bookingTime");
+      var notesInput = document.getElementById("notes");
+
+      var name = nameInput ? nameInput.value.trim() : "";
+      var phone = phoneInput ? phoneInput.value.trim() : "";
+      var email = emailInput ? emailInput.value.trim() : "";
+      var service = serviceInput ? serviceInput.value : "Men's Haircut";
+      var stylist = stylistInput ? stylistInput.value : "Harshal Bhai — Master Barber & Hair Specialist";
+      var bookingDate = dateInput ? dateInput.value : "";
+      var bookingTime = timeInput ? timeInput.value : "";
+      var notes = notesInput ? notesInput.value.trim() : "";
+
+      // Client-side Validation
+      var validationError = "";
+      if (!name || name.length < 2) {
+        validationError = "Please enter your full name.";
+        if (nameInput) {
+          nameInput.classList.add("is-field-error");
+          nameInput.focus();
+        }
+      } else if (!phone || phone.replace(/\D/g, "").length < 7) {
+        validationError = "Please enter a valid mobile / contact number.";
+        if (phoneInput) {
+          phoneInput.classList.add("is-field-error");
+          phoneInput.focus();
+        }
+      } else if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        validationError = "Please enter a valid email address or leave it blank.";
+        if (emailInput) {
+          emailInput.classList.add("is-field-error");
+          emailInput.focus();
+        }
+      } else if (!bookingDate) {
+        bookingDate = new Date().toISOString().split("T")[0];
+        if (dateInput) dateInput.value = bookingDate;
+      }
+
+      if (!bookingTime) {
+        bookingTime = "02:30 PM";
+        if (timeInput) timeInput.value = bookingTime;
+      }
+
+      if (validationError) {
+        if (feedbackEl) {
+          feedbackEl.textContent = validationError;
+          feedbackEl.style.display = "block";
+        }
+        return;
+      }
+
+      // Format WhatsApp message for backup / direct messaging
       var waMsg = "Hello Sai Darshan Salon! I would like to book an appointment:\n\n" +
         "👤 *Name:* " + name + "\n" +
         "📞 *Phone:* " + phone + "\n" +
@@ -438,6 +507,26 @@
         submitBtn.textContent = "Checking availability...";
       }
 
+      function resetFormFields() {
+        contactForm.reset();
+        var today = new Date().toISOString().split("T")[0];
+        if (dateInput) {
+          dateInput.value = today;
+          dateInput.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        if (timeInput) {
+          timeInput.value = "02:30 PM";
+          timeInput.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        document.querySelectorAll(".custom-select-wrap").forEach(function (wrap) {
+          var sel = wrap.querySelector("select");
+          var trig = wrap.querySelector(".custom-select-trigger");
+          if (sel && trig && sel.options[sel.selectedIndex]) {
+            trig.textContent = sel.options[sel.selectedIndex].textContent;
+          }
+        });
+      }
+
       function handleBookingResponse(result) {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -453,12 +542,7 @@
             waUrl: waUrl
           });
 
-          // Reset form fields
-          contactForm.reset();
-          if (bookingDateInput) {
-            bookingDateInput.value = new Date().toISOString().split("T")[0];
-            bookingDateInput.dispatchEvent(new Event("change", { bubbles: true }));
-          }
+          resetFormFields();
         } else if (result && result.conflict) {
           // Conflict: Stylist already booked on this slot
           showBookingModal({
@@ -467,17 +551,31 @@
             message: (result.message || "This stylist is already booked for the selected date and time.") + "<br /><br />Please choose another preferred time slot, change the date, or select another master stylist."
           });
         } else {
-          // Generic server error
+          // Generic server response error
           showBookingModal({
             type: "error",
-            title: "Booking Error",
-            message: (result && result.message) ? result.message : "Unable to process the appointment. Please try again or message us on WhatsApp."
+            title: "Booking Notice",
+            message: (result && result.message) ? result.message : "Unable to complete automatic booking. You can instantly confirm via WhatsApp below:",
+            waUrl: waUrl
           });
         }
       }
 
-      // If Google Apps Script URL is configured, submit via JSONP (bypasses browser CORS redirect blocks)
-      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.indexOf("http") === 0) {
+      function showNetworkFallbackModal() {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalBtnText;
+        }
+        showBookingModal({
+          type: "error",
+          title: "Connection Notice",
+          message: "We were unable to reach the booking server directly. You can instantly complete your booking with 1-click on WhatsApp below:",
+          waUrl: waUrl
+        });
+      }
+
+      // JSONP Fallback helper
+      function submitViaJsonp() {
         var cbName = "sdCallback_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
         var scriptEl = document.createElement("script");
         var timer = null;
@@ -492,17 +590,8 @@
         timer = setTimeout(function () {
           if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
           delete window[cbName];
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
-          }
-          showBookingModal({
-            type: "error",
-            title: "Network Notice",
-            message: "We encountered a temporary connection issue. You can instantly book your slot directly via our official WhatsApp concierge below:",
-            waUrl: waUrl
-          });
-        }, 15000);
+          showNetworkFallbackModal();
+        }, 10000);
 
         var queryParams = new URLSearchParams(payload);
         queryParams.set("action", "book");
@@ -513,19 +602,49 @@
           if (timer) clearTimeout(timer);
           if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
           delete window[cbName];
-          if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
-          }
-          showBookingModal({
-            type: "error",
-            title: "Network Notice",
-            message: "We encountered a temporary connection issue. You can instantly book your slot directly via our official WhatsApp concierge below:",
-            waUrl: waUrl
-          });
+          showNetworkFallbackModal();
         };
 
         document.head.appendChild(scriptEl);
+      }
+
+      // If Google Apps Script URL is configured:
+      if (GOOGLE_SCRIPT_URL && GOOGLE_SCRIPT_URL.indexOf("http") === 0) {
+        // Tier 1: Modern CORS-friendly Fetch POST with Content-Type: text/plain (avoids CORS preflight)
+        var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+        var fetchTimer = setTimeout(function () {
+          if (controller) controller.abort();
+        }, 12000);
+
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload),
+          signal: controller ? controller.signal : undefined
+        })
+          .then(function (response) {
+            clearTimeout(fetchTimer);
+            return response.json();
+          })
+          .then(function (result) {
+            handleBookingResponse(result);
+          })
+          .catch(function (fetchErr) {
+            clearTimeout(fetchTimer);
+            // Tier 2: Try GET fetch
+            var getUrl = GOOGLE_SCRIPT_URL + (GOOGLE_SCRIPT_URL.indexOf("?") === -1 ? "?" : "&") + "action=book&" + new URLSearchParams(payload).toString();
+            fetch(getUrl, { method: "GET" })
+              .then(function (res) { return res.json(); })
+              .then(function (result) {
+                handleBookingResponse(result);
+              })
+              .catch(function () {
+                // Tier 3: Try JSONP
+                submitViaJsonp();
+              });
+          });
       } else {
         // Direct WhatsApp / local preview confirmation when script URL is awaiting deployment
         setTimeout(function () {
@@ -545,11 +664,7 @@
             window.open(waUrl, "_blank", "noopener,noreferrer");
           } catch (err) { }
 
-          contactForm.reset();
-          if (bookingDateInput) {
-            bookingDateInput.value = new Date().toISOString().split("T")[0];
-            bookingDateInput.dispatchEvent(new Event("change", { bubbles: true }));
-          }
+          resetFormFields();
         }, 500);
       }
     });
@@ -835,6 +950,11 @@
       var hStr = String(selectedHour).padStart(2, "0");
       var mStr = String(selectedMinute).padStart(2, "0");
       return hStr + ":" + mStr + " " + selectedMeridian;
+    }
+
+    if (!timeInput.value) {
+      timeInput.value = formatFormattedTime();
+      trigger.textContent = formatFormattedTime();
     }
 
     function updateTimeValue(closePopup) {
